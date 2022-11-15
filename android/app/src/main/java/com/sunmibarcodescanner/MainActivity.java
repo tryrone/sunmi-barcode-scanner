@@ -1,7 +1,12 @@
 package com.sunmibarcodescanner;
 
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
@@ -10,6 +15,19 @@ import com.facebook.react.ReactRootView;
 import expo.modules.ReactActivityDelegateWrapper;
 
 public class MainActivity extends ReactActivity {
+//  private IScanInterface scanInterface;
+  private static ServiceConnection serviceConnection = new ServiceConnection() {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+//      scanInterface = null;
+    }
+  };
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     // Set the theme to AppTheme BEFORE onCreate to support 
@@ -17,6 +35,15 @@ public class MainActivity extends ReactActivity {
     // This is required for expo-splash-screen.
     setTheme(R.style.AppTheme);
     super.onCreate(null);
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+    Intent intent = new Intent();
+    intent.setPackage("com.sunmi.scanner");
+    intent.setAction("com.sunmi.scanner.IScanInterface");
+    bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
   }
 
   /**
