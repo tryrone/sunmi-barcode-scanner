@@ -1,6 +1,5 @@
 // IScanInterface.aidl
-package com.sunmi.scanner;
-
+package aidl;
 // Declare any non-default types here with import statements
 
 interface IScanInterface {
