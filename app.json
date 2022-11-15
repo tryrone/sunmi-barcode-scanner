@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "sunmi-barcode-scanner",
+    "slug": "sunmi-barcode-scanner",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "sunmi-barcode-scanner"
+}
