@@ -18,7 +18,10 @@ import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.ReactRootView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import aidl.IScanInterface;
 import expo.modules.ReactActivityDelegateWrapper;
@@ -27,6 +30,7 @@ public class MainActivity extends ReactActivity {
     private static final String ACTION_DATA_CODE_RECEIVED = "com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED";
     private static final String DATA = "data";
     private static final String SOURCE = "source_byte";
+    private final int START_SCAN = 0;
 
     private IScanInterface scanInterface;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -63,6 +67,12 @@ public class MainActivity extends ReactActivity {
         super.onCreate(null);
     }
 
+    private void scanWithCamera() {
+        Intent intent = new Intent("com.summi.scan");
+        intent.setPackage("com.sunmi.sunmiqrcodescanner");
+        startActivityForResult(intent, START_SCAN);
+    }
+
     private void registerReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_DATA_CODE_RECEIVED);
@@ -74,6 +84,21 @@ public class MainActivity extends ReactActivity {
         intent.setPackage("com.sunmi.scanner");
         intent.setAction("com.sunmi.scanner.IScanInterface");
         bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1 && data != null) {
+            Bundle bundle = data.getExtras();
+            ArrayList result = (ArrayList) bundle.getSerializable("data");
+            Iterator<HashMap> it = result.iterator();
+            while (it.hasNext()) {
+                HashMap hashMap = it.next();
+                Log.i("sunmi", (String) hashMap.get("TYPE"));
+                Log.i("sunmi", (String) hashMap.get("VALUE"));
+            }
+        }
     }
 
     @Override
