@@ -5,7 +5,11 @@ const { CalendarModule, CameraScanner } = NativeModules;
 
 export default function App() {
   const onPress = async () => {
-    CameraScanner.launchScanner();
+    try {
+      await CameraScanner.launchScanner();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
