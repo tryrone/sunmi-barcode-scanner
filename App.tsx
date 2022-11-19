@@ -6,7 +6,8 @@ const { CalendarModule, CameraScanner } = NativeModules;
 export default function App() {
   const onPress = async () => {
     try {
-      await CameraScanner.launchScanner();
+      const result = await CameraScanner.launchScanner();
+      console.log("RES::", result);
     } catch (error) {
       console.log(error);
     }

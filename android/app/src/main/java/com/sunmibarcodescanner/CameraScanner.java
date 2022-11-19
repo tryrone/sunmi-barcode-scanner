@@ -37,8 +37,8 @@ class CameraScanner extends ReactContextBaseJavaModule {
                     Iterator<HashMap> it = result.iterator();
                     while (it.hasNext()) {
                         HashMap hashMap = it.next();
-                        Log.i("scanner result type", (String) hashMap.get("TYPE"));
-                        Log.i("scanner result type", (String) hashMap.get("VALUE"));
+                        String scannedValue = (String) hashMap.get("VALUE");
+                        promise.resolve(scannedValue);
                     }
                 }
             }
