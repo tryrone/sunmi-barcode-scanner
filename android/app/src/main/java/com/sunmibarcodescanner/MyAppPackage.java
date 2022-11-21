@@ -1,4 +1,5 @@
 package com.sunmibarcodescanner;
+
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -21,6 +22,7 @@ public class MyAppPackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
 
         modules.add(new CalendarModule(reactContext));
+        modules.add(new CameraScanner(reactContext));
 
         return modules;
     }
