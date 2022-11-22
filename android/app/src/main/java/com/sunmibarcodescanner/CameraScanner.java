@@ -3,7 +3,6 @@ package com.sunmibarcodescanner;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,42 +15,38 @@ import com.facebook.react.bridge.ReactMethod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 class CameraScanner extends ReactContextBaseJavaModule {
     private final int SCAN_CODE = 999;
     private Promise promise;
 
-    private final ActivityEventListener eventListener = new ActivityEventListener() {
-        @Override
-        public void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent intent) {
-            if (requestCode == SCAN_CODE) {
-                if (promise != null && resultCode == Activity.RESULT_OK) {
-                    if (intent == null) {
-                        promise.reject("Error occurred", "No data");
-                        return;
-                    }
+    CameraScanner(ReactApplicationContext reactContext) {
+        super(reactContext);
+        ActivityEventListener eventListener = new ActivityEventListener() {
+            @Override
+            public void onActivityResult(Activity activity, int requestCode, int resultCode, @Nullable Intent intent) {
+                if (requestCode == SCAN_CODE) {
+                    if (promise != null && resultCode == Activity.RESULT_OK) {
+                        if (intent == null) {
+                            promise.reject("Error occurred", "No data");
+                            return;
+                        }
 
-                    Bundle bundle = intent.getExtras();
-                    ArrayList result = (ArrayList) bundle.getSerializable("data");
-                    Iterator<HashMap> it = result.iterator();
-                    while (it.hasNext()) {
-                        HashMap hashMap = it.next();
-                        String scannedValue = (String) hashMap.get("VALUE");
-                        promise.resolve(scannedValue);
+                        Bundle bundle = intent.getExtras();
+                        ArrayList result = (ArrayList) bundle.getSerializable("data");
+                        for (HashMap hashMap : (Iterable<HashMap>) result) {
+                            String scannedValue = (String) hashMap.get("VALUE");
+                            promise.resolve(scannedValue);
+                        }
                     }
                 }
             }
-        }
 
-        @Override
-        public void onNewIntent(Intent intent) {
+            @Override
+            public void onNewIntent(Intent intent) {
 
-        }
-    };
-
-    CameraScanner(ReactApplicationContext reactContext) {
-        super(reactContext);
+            }
+        };
         reactContext.addActivityEventListener(eventListener);
     }
 

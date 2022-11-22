@@ -16,23 +16,28 @@ import android.view.KeyEvent;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import java.util.ArrayList;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import aidl.IScanInterface;
 import expo.modules.ReactActivityDelegateWrapper;
 
 public class MainActivity extends ReactActivity {
+    private ReactContext mReactContext;
+    private IScanInterface scanInterface;
+
     private static final String ACTION_DATA_CODE_RECEIVED = "com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED";
     private static final String DATA = "data";
     private static final String SOURCE = "source_byte";
-    private final int START_SCAN = 0;
 
-    private IScanInterface scanInterface;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -48,11 +53,14 @@ public class MainActivity extends ReactActivity {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String code = intent.getStringExtra(DATA);
+            String data = intent.getStringExtra(DATA);
             byte[] arr = intent.getByteArrayExtra(SOURCE);
-            if (code != null && !code.isEmpty()) {
-                Log.d("TAG", "onReceive: CODE IS:::" + code);
-                Log.d("TAG", "onReceive: ARR IS:::" + Arrays.toString(arr));
+            if (data != null && !data.isEmpty()) {
+                if (mReactContext == null) return;
+                WritableMap params = Arguments.createMap();
+                params.putString("Scanned data", data);
+                sendEvent(mReactContext, "INFRARED_SCAN", params);
+                Log.d("TAG", "onReceive: Source byte::" + Arrays.toString(arr));
             }
         }
     };
@@ -65,12 +73,12 @@ public class MainActivity extends ReactActivity {
         // This is required for expo-splash-screen.
         setTheme(R.style.AppTheme);
         super.onCreate(null);
-    }
 
-    private void scanWithCamera() {
-        Intent intent = new Intent("com.summi.scan");
-        intent.setPackage("com.sunmi.sunmiqrcodescanner");
-        startActivityForResult(intent, START_SCAN);
+        ReactInstanceManager reactInstanceManager = getReactNativeHost().getReactInstanceManager();
+        reactInstanceManager
+                .addReactInstanceEventListener((ReactInstanceManager.ReactInstanceEventListener)
+                        validContext -> mReactContext = validContext
+                );
     }
 
     private void registerReceiver() {
@@ -86,19 +94,9 @@ public class MainActivity extends ReactActivity {
         bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && data != null) {
-            Bundle bundle = data.getExtras();
-            ArrayList result = (ArrayList) bundle.getSerializable("data");
-            Iterator<HashMap> it = result.iterator();
-            while (it.hasNext()) {
-                HashMap hashMap = it.next();
-                Log.i("sunmi", (String) hashMap.get("TYPE"));
-                Log.i("sunmi", (String) hashMap.get("VALUE"));
-            }
-        }
+    private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
+        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
     }
 
     @Override
@@ -125,6 +123,12 @@ public class MainActivity extends ReactActivity {
         unbindService(serviceConnection);
         unregisterReceiver(receiver);
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        mReactContext = null;
+        super.onDestroy();
     }
 
     /**
